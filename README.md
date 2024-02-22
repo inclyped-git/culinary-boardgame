@@ -9,3 +9,7 @@ The project was made with consideration of restrictions to user inputs, which ma
 
 ## More information!!
 The 'BREAKDOWN' folder contains individual files that were compiled together to construct the final "culinary_boardgame.py" file. Some of the source code within the individual files will be misleading or uncompleted. Please check the final source code for the full program.
+
+The 'SAMPLEOUTPUTS' folder contains the expected outputs returned by the program with the given restricted inputs. Feel free to use these files to check if the outputs are similar/identical with the final source code.
+
+The 'ESSENTIALS' folder contain other essential files required to be in the same directory as the final source code in order to be fully functional.
