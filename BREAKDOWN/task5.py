@@ -1,11 +1,6 @@
-from DATA1 import board_size as boardSize1
-from DATA2 import board_size as boardSize2
-
-from DATA1 import delimiter as del1
-from DATA2 import delimiter as del2
-
-from DATA1 import csv_data as csv1
-from DATA2 import csv_data as csv2
+from restaurant_medium import board_size as board_size1
+from restaurant_medium import csv_data as data1
+from restaurant_medium import delimiter as delimiter1
 
 class RestaurantManager:
     """
@@ -50,7 +45,7 @@ class RestaurantManager:
     def get_bitecoins(self) -> int:
         """
         Description: Getter method for the instance variable "bitecoins".
-
+        
         Returns:
         @return int: The number of bitecoins the manager currently has.
         """
@@ -105,6 +100,7 @@ class RestaurantManager:
         """
         return self.get_manager_positions()[-1]
     
+    
     def undo_position(self) -> int:
         """
         Description: 
@@ -144,104 +140,70 @@ class RestaurantManager:
         """
         return self.__str__()
 
-
     def buy_restaurant(self, restaurantsDictionary: dict, boardPosition: int) -> str:
-        """
-        Description: Behaviour to allow the manager to buy shares of available restaurants.
-
-        Parameters:
-        @param dict restaurantsDictionary: Contains details of the restaurants, which could either be a list or a Restaurant object.
-        @param int boardPosition: The board position of the restaurant the manager wants to buy in.
-
-        Returns:
-        @return str: A string that indicates whether the manager was able to purchase the restaurant.
-        """
-        restaurantDetails = restaurantsDictionary[boardPosition] # gets the details from a specific position.
+        restaurantDetails = restaurantsDictionary[boardPosition] # gets the list of restaurant details.
         
-        # checking if the details is a list type or Restaurant type.
+        # checking if the value stored in the dictionary is a list or object.
         if isinstance(restaurantDetails, list):
-            # if its a list, the restaurant has not been bought yet. 
-            # if the manager cannot afford the restaurant, it does not convert to a restaurant object.
-            if self.get_bitecoins() < int(restaurantDetails[2]): 
+            # if its a list,
+            if self.get_bitecoins() < int(restaurantDetails[2]): # if the manager cannot afford the restaurant, it does not convert to a restaurant object.
                 return f"{self.get_name()} does not have enough money to afford {restaurantDetails[0]}"
-            
-            # if the manager can afford, the Restaurant constructor is called in with specified fields.
-            restaurantsDictionary[boardPosition] = Restaurant(restaurantDetails[0], restaurantDetails[1], restaurant_price=int(restaurantDetails[2]), board_position=boardPosition)
+            else:
+                restaurantsDictionary[boardPosition] = Restaurant(restaurantDetails[0], restaurantDetails[1], restaurant_price=int(restaurantDetails[2]), board_position=boardPosition)
+                self.update_restaurants_managed(restaurantsDictionary[boardPosition])
+                self.update_position(boardPosition)
+                self.update_bitecoins(-restaurantsDictionary[boardPosition].get_restaurant_price())
+                restaurantsDictionary[boardPosition].add_new_comanager(self)
                 
-            # updating the restaurants managed, position and bitecoins of the manager.
-            self.update_restaurants_managed(restaurantsDictionary[boardPosition])
-            self.update_position(boardPosition)
-            self.update_bitecoins(-restaurantsDictionary[boardPosition].get_restaurant_price())
-                
-            # adding a new comanager to the restaurant.
-            restaurantsDictionary[boardPosition].add_new_comanager(self)
-            
-            # since the manager was the first one to purchase the share, they become the first manager.
-            return f"{self.get_name()} becomes the first manager of {restaurantsDictionary[boardPosition].get_restaurant_name()}"
+                return f"{self.get_name()} becomes the first manager of {restaurantsDictionary[boardPosition].get_restaurant_name()}"
         
         else:
-            # if its already an object, we can check if the restaurant is not available.
+            # if its already an object,
             if not (restaurantsDictionary[boardPosition].has_manager_availability()):
                 return f"{restaurantsDictionary[boardPosition].get_restaurant_name()} is no longer available"
-            
-            # if the restaurant is available, we can check if the manager can afford the restaurant shares.
-            if self.get_bitecoins() < restaurantsDictionary[boardPosition].get_restaurant_price():
-                return f"{self.get_name()} does not have enough money to afford {restaurantsDictionary[boardPosition].get_restaurant_name()}"
-
-            # updating the fields if the manager can buy the shares.
-            self.update_restaurants_managed(restaurantsDictionary[boardPosition])
-            self.update_position(boardPosition)
-            self.update_bitecoins(-restaurantsDictionary[boardPosition].get_restaurant_price())
-            restaurantsDictionary[boardPosition].add_new_comanager(self)
-            
-            # if there is only one manager managing the restaurant,
-            if (restaurantsDictionary[boardPosition].has_sole_manager()):
-                # the manager is a sole manager if he owns 100% otherwise he is just main.
-                replaceString = "a sole manager" if restaurantsDictionary[boardPosition].get_managerial_share(self) == 100 else "the head manager"
-            # if there are multiple managers managing the restaurant,
             else:
-                # the manager is a head if he owns 60%+, otherwise he is just a co-manager.
-                replaceString = "the head manager" if restaurantsDictionary[boardPosition].get_managerial_share(self) >= 60 else "co-manager"
-            
-            return f"{self.get_name()} becomes {replaceString} of {restaurantsDictionary[boardPosition].get_restaurant_name()}"
-
+                if self.get_bitecoins() < restaurantsDictionary[boardPosition].get_restaurant_price():
+                    return f"{self.get_name()} does not have enough money to afford {restaurantsDictionary[boardPosition].get_restaurant_name()}"
+                else:
+                    self.update_restaurants_managed(restaurantsDictionary[boardPosition])
+                    self.update_position(boardPosition)
+                    self.update_bitecoins(-restaurantsDictionary[boardPosition].get_restaurant_price())
+                    restaurantsDictionary[boardPosition].add_new_comanager(self)
+                    
+        
+        # we need to consider cases where the manager is either head, co- or sole.
+        if (restaurantsDictionary[boardPosition].has_sole_manager()):
+            if restaurantsDictionary[boardPosition].get_managerial_share(self) == 100:
+                return f"{self.get_name()} becomes a sole manager of {restaurantsDictionary[boardPosition].get_restaurant_name()}"
+            else:
+                return f"{self.get_name()} becomes the head manager of {restaurantsDictionary[boardPosition].get_restaurant_name()}"
+        
+        else:
+            if restaurantsDictionary[boardPosition].get_managerial_share(self) >= 60:
+                return f"{self.get_name()} becomes the head manager of {restaurantsDictionary[boardPosition].get_restaurant_name()}"
+            else:
+                return f"{self.get_name()} becomes co-manager of {restaurantsDictionary[boardPosition].get_restaurant_name()}"
                     
             
     def display_restaurants_managed(self):
-        """
-        Description: Prints a list of restaurants managed by the manager, alongside the total BiteCoins worth of restaurants
-                     managed and the shares owned.
-        """
-        
-        # variables to keep track of the bitecoins and shares.
         totalBitecoinsWorth = 0
         totalSharesWorth = 0
         
-        # traversing through each restaurant type inside the class variable RESTAURANT_TYPES in Restaurant class.
         for restaurantType in Restaurant.RESTAURANT_TYPES:
-            
-            # since we need to print restaurants that are of particular restaurant types, we are choosing only the 
-            # restaurants that are matching with the restaurantType.
             availableRestaurants = [ restaurant for restaurant in self.get_restaurants_managed() if restaurant.get_restaurant_type() == restaurantType ]
             
-            # if any element exists, print the type title.
             if availableRestaurants:
                 print(restaurantType.upper())
                 
-                # repetitively adding the BiteCoins and Shares of the restaurants, while printing the list of restaurants
-                # for a particular restaurant type.
                 for index, restaurantInList in enumerate(availableRestaurants, start=1):
                     totalBitecoinsWorth += restaurantInList.get_restaurant_price() * int ( restaurantInList.get_managerial_share(self) / 30 )
                     totalSharesWorth += restaurantInList.get_restaurant_price() * ( restaurantInList.get_managerial_share(self) / 100 )
                     
                     print(f"{index}. {restaurantInList.get_restaurant_name()} ({restaurantInList.get_restaurant_price()} BiteCoins, {restaurantInList.get_managerial_share(self)}%)")
         
-        # printing end statements.
         print("OVERALL")
         print(f"Restaurants worth {totalBitecoinsWorth} BiteCoins")
-        print(f"Managerial shares worth {int ( totalSharesWorth )} BiteCoins")            
-            
-                
+        print(f"Managerial shares worth {int ( totalSharesWorth )} BiteCoins")      
                     
     def lose_bitecoin(self, restaurantsDictionary: dict):
         """
@@ -252,6 +214,9 @@ class RestaurantManager:
         """
         # assuming the restaurant at the current position is a Restaurant object, we can access the object through this code.
         restaurantDetail = restaurantsDictionary[self.get_current_position()]
+
+        if not restaurantDetail.has_manager_availability():
+            print("None")
         
         # a list of managers to pay the 50% fee, excluding the members that are themselves inside the list.
         managerPayList = [ manager for manager in list(set(restaurantDetail.get_managers_list())) if manager != self ]
@@ -260,8 +225,7 @@ class RestaurantManager:
         for manager in managerPayList:
             moneyGained = round( (restaurantDetail.get_managerial_share(manager) / 100) * (restaurantDetail.get_restaurant_price() * 0.5) + 0.1)
             manager.update_bitecoins(moneyGained)
-            self.update_bitecoins(-moneyGained)    
-        
+            self.update_bitecoins(-moneyGained)        
            
     def check_winning_conditions(self, numOfRestaurants: int = 4,avgManagerialShare: float = 0,numOfTypes: int = 3) -> bool:
         """
@@ -292,8 +256,6 @@ class RestaurantManager:
             return False
         
         return True
-                
-        
     
 class Restaurant:
     """
@@ -559,24 +521,3 @@ def retrieve_restaurant_details(data: list, delimiter: str, board_size: int) -> 
             finalDictionary[keyToStore] = valueToStore
     
     return finalDictionary
-
-if __name__ == '__main__':
-    restaurant_details_dict = retrieve_restaurant_details(csv1, del1, boardSize1)
-    
-    manager1 = RestaurantManager('Beryl') 
-    manager2 = RestaurantManager('Maze') 
-    
-    print(manager1.buy_restaurant(restaurant_details_dict, 0))
-    print(manager1.buy_restaurant(restaurant_details_dict, 1)) 
-    print(manager1.buy_restaurant(restaurant_details_dict, 1))
-    print(manager1.buy_restaurant(restaurant_details_dict, 2))
-    print(manager1.buy_restaurant(restaurant_details_dict, 3))
-    
-    print(manager2.buy_restaurant(restaurant_details_dict, 0))
-    print(manager2.buy_restaurant(restaurant_details_dict, 0))
-    print(manager2.buy_restaurant(restaurant_details_dict, 1))
-    print(manager2.buy_restaurant(restaurant_details_dict, 2))
-    print(manager2.buy_restaurant(restaurant_details_dict, 2))
-        
-    print(manager1.check_winning_conditions())
-    print(manager2.check_winning_conditions())   
