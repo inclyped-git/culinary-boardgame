@@ -1,7 +1,4 @@
 from abc import ABC, abstractmethod
-from DATA1 import board_size as board_size1
-from DATA1 import delimiter as delimiter1
-from DATA1 import csv_data as data1
 import random
 
 class RestaurantManager:
@@ -704,7 +701,7 @@ class ChanceGrid(DiagonalGrid):
         Returns:
         @return str: The result of the effect taking place.
         """
-        return random.choice([get_reward, get_penalty, get_randomly_transported])(manager)
+        return random.choice([self.get_reward, self.get_penalty, self.get_randomly_transported])(manager)
       
     def get_reward(self, manager: object) -> str:
         """
@@ -736,54 +733,22 @@ class ChanceGrid(DiagonalGrid):
         
     
     def get_randomly_transported(self, manager):
+        position = random.choice(list(self.details_dictionary.keys()))
         
-
-        boardSize = int ( (list(self.details_dictionary.keys())[-1] + 1 ) ** 0.5 )
-        position = random.randint(0, boardSize)
+        while position == manager.get_current_position():
+            position = random.choice(list(self.details_dictionary.keys()))
         
+        manager.update_position(position)
+        beforeEffect = manager.get_bitecoins()
         
+        print(f"GRID EFFECT: {manager.get_name()} has been moved to position {manager.get_current_position()} on the board!")
         
+        print(manager.buy_restaurant(self.details_dictionary, manager.get_current_position()))
         
-        while position % ( boardSize - 1 ) == 0 and position > 0 and position < boardSize**2 - 1:
-            position = random.randint(0, boardSize)
-            
-        if isinstance(self.details_dictionary[position], list):
-            print(manager.buy_restaurant(self.details_dictionary, position))
+        # we need to consider if the restaurant is a list or object.
+        if isinstance(self.details_dictionary[manager.get_current_position()], Restaurant):
+            if not self.details_dictionary[manager.get_current_position()].has_manager_availability():
+                if self.details_dictionary[manager.get_current_position()].get_managerial_share(manager) == 0:
+                    manager.lose_bitecoins(self.details_dictionary)
         
-        else:
-            
-            if self.details_dictionary[position].has_manager_availability():
-                print(manager.buy_restaurant(self.details_dictionary, position))
-            else:
-                manager.update_position(position)
-                if manager not in self.get_managers_list():
-                    manager.lose_bitecoin(self.details_dictionary)
-                    
-        
-        
-        
-        
-                    
-                
-            
-                    
-
-        
-        
-                
-
-        
-    
-    
-if __name__ == '__main__':
-    restaurant_details_dict = retrieve_restaurant_details(data1, delimiter1, board_size1)
-    manager = RestaurantManager('Dust')
-    print(manager.buy_restaurant(restaurant_details_dict, 0))
-    print(manager.buy_restaurant(restaurant_details_dict, 0))
-    print(manager.buy_restaurant(restaurant_details_dict, 0))
-
-    manager.update_position(12)
-    print(manager.get_current_position())
-    print(manager.get_next_positions(restaurant_details_dict))
-
-  
+        return f"Total BiteCoins left: {manager.get_bitecoins()}"
