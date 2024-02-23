@@ -1,6 +1,6 @@
 class RestaurantManager:
     """
-    Description: RestaurantManager is a class that contains the attributes of a manager:
+    Description: RestaurantManager is a class that contains the attributes of a manager -
     their name, their symbol, their bitecoins, the number of restaurants managed, and 
     what positions they currently own.
     """
@@ -19,7 +19,7 @@ class RestaurantManager:
         self.restaurants_managed = []
         self.manager_positions = []
     
-    
+    # set of getters.
     def get_name(self) -> str:
         """
         Description: Getter method for the instance variable "name".
@@ -67,6 +67,7 @@ class RestaurantManager:
         return self.manager_positions
 
     
+    # set of updators and retrievers
     def update_bitecoins(self, coins: int):
         """
         Description: Updates the bitecoins the manager has.
@@ -75,6 +76,7 @@ class RestaurantManager:
         @param int coins: The number of coins lost or gained by the manager.
         """
         self.bitecoins = self.get_bitecoins() + coins
+        
     
     def update_position(self, pos: int):
         """
@@ -105,7 +107,7 @@ class RestaurantManager:
         self.manager_positions = self.get_manager_positions()[:-1]
         return self.get_manager_positions()[-1]
     
-    def update_restaurants_managed(self, restaurant: Restaurant):
+    def update_restaurants_managed(self, restaurant: object):
         """
         Description: Appends the restaurant the manager owns.
 
@@ -115,6 +117,7 @@ class RestaurantManager:
         if restaurant not in self.get_restaurants_managed():
             self.get_restaurants_managed().append(restaurant)
     
+    # string rep functions
     def __str__(self) -> str:
         """
         Description: A function that represents the details of the restaurant manager object.
@@ -124,7 +127,7 @@ class RestaurantManager:
         """
         return f"{self.get_name()} has {self.get_bitecoins()} BiteCoins and manages {len(self.get_restaurants_managed())} restaurant(s)"
     
-    def __repr__(self) -> str:
+    def __repr__(self) -> object:
         """
         Description: __repr__() function calls the __str__() function.
 
@@ -134,19 +137,9 @@ class RestaurantManager:
         return self.__str__()
 
 
-
-r1 = RestaurantManager("Homy")
-r1.update_position(5)
-print(r1.get_manager_positions())
-r1.update_position(6)
-print(r1.get_manager_positions())
-r1.undo_position()
-print(r1.get_manager_positions())
-print(r1.get_current_position())
-
-def get_lst():
-    return lst
-
-lst = [1]
-get_lst().append(2)
-print(lst)
+class Restaurant:
+    """
+    DUMMY CLASS
+    You may leave this blank as your RestaurantManager Class will still work with this class left empty.
+    """
+    pass
